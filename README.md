@@ -1,255 +1,28 @@
-# HR Engagement Analysis Platform
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
 
-A lightweight, intelligent web application for HR teams to analyze employee engagement through survey data. The platform combines manual survey inputs with AI-powered analysis to provide actionable insights and visual representations of workplace sentiment.
+# Flask + Vercel
 
-## 🌟 Features
+This example shows how to use Flask 3 on Vercel with Serverless Functions using the [Python Runtime](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python).
 
-### 1. Survey Management
-- Quick survey input form for HR/team leads
-- Bulk data import via CSV/Excel
-- Survey response management and deletion
-- Real-time data validation
+## Demo
 
-### 2. AI-Powered Analysis
-- Automatic categorization of responses
-- Sentiment analysis
-- Theme identification
-- Actionable recommendations
-- Powered by Azure OpenAI GPT models
+https://flask-python-template.vercel.app/
 
-### 3. Visual Analytics
-- Interactive charts and graphs
-- Satisfaction trend analysis
-- Category distribution visualization
-- Sentiment distribution
-- Real-time data updates
+## How it Works
 
-### 4. Survey Board
-- Comprehensive survey management
-- Advanced filtering capabilities
-- Bulk operations
-- Real-time search
-- Category-based organization
+This example uses the Web Server Gateway Interface (WSGI) with Flask to enable handling requests on Vercel with Serverless Functions.
 
-## 🛠️ Technology Stack
+## Running Locally
 
-### Frontend
-- Vanilla JavaScript
-- Tailwind CSS for styling
-- Chart.js for visualizations
-- Responsive design
-
-### Backend
-- Flask (Python)
-- Azure OpenAI integration
-- JSON file-based storage
-- RESTful API architecture
-
-## 📋 Prerequisites
-
-- Python 3.8+
-- Azure OpenAI API access
-- Modern web browser
-- Node.js (for Tailwind CSS compilation, optional)
-
-## 🚀 Getting Started
-
-1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd hr_engagement_app
+npm i -g vercel
+vercel dev
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+Your Flask application is now available at `http://localhost:3000`.
 
-3. Configure Azure OpenAI:
-- Navigate to Settings page in the application
-- Enter your Azure OpenAI credentials:
-  - Base URL (endpoint)
-  - API Key
-  - API Version
-  - Deployment Name
+## One-Click Deploy
 
-4. Run the application:
-```bash
-python app.py
-```
+Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
 
-5. Access the application:
-```
-http://localhost:52552
-```
-
-## 📊 Data Structure
-
-### Survey Data
-```json
-{
-    "satisfaction": 1-5,
-    "culture": "string",
-    "suggestions": "string",
-    "timestamp": "ISO datetime",
-    "classification": {
-        "culture_categories": ["array of strings"],
-        "suggestion_categories": ["array of strings"],
-        "sentiment": "Positive/Neutral/Negative",
-        "key_themes": ["array of strings"]
-    }
-}
-```
-
-### Settings Data
-```json
-{
-    "base_url": "Azure OpenAI endpoint",
-    "api_key": "Azure OpenAI API key",
-    "api_version": "API version",
-    "deployment_name": "Model deployment name"
-}
-```
-
-## 📱 Pages and Features
-
-### 1. Survey Input (/)
-- Quick survey submission form
-- Satisfaction rating (1-5)
-- Culture comments
-- Improvement suggestions
-- Real-time validation
-
-### 2. Visual Snapshot (/visual)
-- Satisfaction distribution chart
-- Trend analysis
-- Category distribution
-- Interactive visualizations
-
-### 3. AI Insights (/insights)
-- AI-generated analysis
-- Category breakdown
-- Sentiment distribution
-- Key themes identification
-- Actionable recommendations
-
-### 4. Survey Board (/board)
-- Complete survey management
-- Advanced filtering:
-  - By satisfaction rating
-  - By category
-  - By sentiment
-  - Text search
-- Bulk operations
-- Real-time updates
-
-### 5. Data Import (/import)
-- CSV/Excel file import
-- Template download
-- Data validation
-- Bulk processing
-
-### 6. Settings (/settings)
-- Azure OpenAI configuration
-- Connection testing
-- Credential management
-
-## 🔄 API Endpoints
-
-### Survey Management
-- `POST /api/survey` - Submit new survey
-- `GET /api/survey-data` - Retrieve all surveys with analysis
-- `POST /api/delete-surveys` - Delete selected surveys
-
-### Settings Management
-- `POST /api/settings` - Update Azure OpenAI settings
-- `GET /api/test-connection` - Test Azure OpenAI connection
-
-### Data Import
-- `POST /api/import-surveys` - Import surveys from file
-
-## 🎨 UI Components
-
-### Charts
-- Satisfaction Distribution (Bar Chart)
-- Trend Analysis (Line Chart)
-- Category Distribution (Bar Chart)
-- Sentiment Analysis (Pie Chart)
-
-### Interactive Elements
-- Real-time filters
-- Search functionality
-- Bulk selection
-- Confirmation dialogs
-- Status notifications
-
-## 🔒 Security Considerations
-
-- API key storage in server-side JSON
-- Input validation and sanitization
-- CORS configuration
-- Error handling and logging
-
-## 🔧 Customization
-
-### Categories
-Culture categories and suggestion categories are dynamically generated based on AI analysis, including:
-- Communication
-- Leadership
-- Work-Life Balance
-- Team Collaboration
-- Professional Growth
-- Training
-- Process Improvement
-- Resources
-
-### Sentiment Analysis
-Three-tier sentiment classification:
-- Positive
-- Neutral
-- Negative
-
-## 📈 Future Enhancements
-
-1. Authentication System
-- User roles (Admin, HR, Manager)
-- Access control
-- Secure login
-
-2. Database Integration
-- SQL/NoSQL database support
-- Data backup and recovery
-- Enhanced querying
-
-3. Advanced Analytics
-- Custom report generation
-- Historical trend analysis
-- Department-wise comparison
-
-4. Export Features
-- PDF report generation
-- Excel export
-- Data visualization export
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 👥 Authors
-
-- OpenHands Team
-
-## 🙏 Acknowledgments
-
-- Azure OpenAI team for AI capabilities
-- Chart.js for visualization
-- Tailwind CSS for styling
-- Flask team for the web framework
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)

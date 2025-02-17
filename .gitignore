@@ -1,1 +1,27 @@
 .idea
+.vercel
+# Ignore Python virtual environment
+venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore Python dependencies
+bin/
+lib/
+lib64/
+include/
+*.dist-info
+*.egg-info
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore installed dependencies
+bin/
+lib/
+lib64/
+include/
+*.dist-info
+*.egg-info

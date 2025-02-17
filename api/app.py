@@ -190,7 +190,7 @@ def insights():
 
 @app.route('/settings')
 def settings():
-    current_settings = load_settings()
+    current_settings = None #load_settings()
     return render_template('settings.html', 
                          settings=current_settings,
                          azure_configured=current_settings is not None)
