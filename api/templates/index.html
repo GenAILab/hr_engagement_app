@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-6">Employee Engagement Survey</h2>
+    <form id="surveyForm" class="space-y-6">
+        <div>
+            <label class="block text-gray-700 mb-2">Overall Satisfaction Rating</label>
+            <select name="satisfaction" class="w-full p-2 border rounded" required>
+                <option value="">Select rating</option>
+                <option value="5">5 - Very Satisfied</option>
+                <option value="4">4 - Satisfied</option>
+                <option value="3">3 - Neutral</option>
+                <option value="2">2 - Dissatisfied</option>
+                <option value="1">1 - Very Dissatisfied</option>
+            </select>
+        </div>
+        
+        <div>
+            <label class="block text-gray-700 mb-2">Workplace Culture Comments</label>
+            <textarea name="culture" class="w-full p-2 border rounded" rows="3" required 
+                      placeholder="Share your thoughts on workplace culture..."></textarea>
+        </div>
+        
+        <div>
+            <label class="block text-gray-700 mb-2">Suggestions for Improvement</label>
+            <textarea name="suggestions" class="w-full p-2 border rounded" rows="3" required 
+                      placeholder="What could be improved?"></textarea>
+        </div>
+        
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+            Submit Survey
+        </button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+        satisfaction: parseInt(e.target.satisfaction.value),
+        culture: e.target.culture.value,
+        suggestions: e.target.suggestions.value
+    };
+    
+    try {
+        const response = await fetch('/api/survey', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            alert('Survey submitted successfully!');
+            e.target.reset();
+            window.location.href = '/visual';
+        } else {
+            alert('Error submitting survey');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error submitting survey');
+    }
+});
+</script>
+{% endblock %}

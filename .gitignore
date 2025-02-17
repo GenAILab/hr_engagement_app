@@ -17,13 +17,6 @@ include/
 __pycache__/
 *.pyc
 *.pyo
-blinker
-click
-flask
-itsdangerous
-jinja2
-markupsafe
-werkzeug
 
 # Ignore installed dependencies
 bin/
