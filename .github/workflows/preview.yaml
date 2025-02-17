@@ -26,8 +26,11 @@ jobs:
         run: echo "VERCEL_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})" >> $GITHUB_ENV
 
       - name: Output Deployed URL
-        run: echo "Deployment URL: $VERCEL_URL"
-
+        run: |
+          echo "Deployment URL: $VERCEL_URL"
+      
       - name: Add Deployment URL to Summary
-        run: echo "### 🚀 Vercel Deployment Successful!
-          Preview URL: [$VERCEL_URL]($VERCEL_URL)" >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo "### 🚀 Vercel Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+          echo "Preview URL: [$VERCEL_URL]($VERCEL_URL)" >> $GITHUB_STEP_SUMMARY
+
