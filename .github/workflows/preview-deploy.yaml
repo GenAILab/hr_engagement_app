@@ -1,4 +1,4 @@
-name: Vercel Preview Deployment for Dev Branch
+name: Vercel Preview Deployment
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -7,7 +7,7 @@ env:
 on:
   push:
     branches:
-      - dev
+      - cursor_test
 
 jobs:
   Deploy-Preview:
@@ -28,11 +28,25 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --confirm)
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes)
+          echo "DEPLOY_OUTPUT=${DEPLOY_OUTPUT}" >> $GITHUB_ENV
+          DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[^ ]*')
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
 
-      - name: Add Deployment URL to Summary
-        run: echo "Deployment URL: ${{ env.DEPLOY_URL }}"
+      - name: Retrieve Inspect URL
+        run: |
+          INSPECT_OUTPUT=$(vercel inspect ${{ env.DEPLOY_URL }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "INSPECT_OUTPUT=${INSPECT_OUTPUT}" >> $GITHUB_ENV
+          INSPECT_URL=$(echo "${INSPECT_OUTPUT}" | grep -o 'https://[^ ]*')
+          echo "INSPECT_URL=${INSPECT_URL}" >> $GITHUB_ENV
+
+      - name: Add Deployment and Inspect URLs to Summary
+        run: |
+          echo "🚀 **Deployment Successful!**" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 [View your deployment here](${{ env.DEPLOY_URL }})" >> $GITHUB_STEP_SUMMARY
+          echo "🔍 [Inspect your deployment here](${{ env.INSPECT_URL }})" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment URL: ${{ env.DEPLOY_URL }}"
+          echo "Inspect URL: ${{ env.INSPECT_URL }}"
 
       - name: Update PR with Deployment URL
         if: github.event_name == 'pull_request'
@@ -46,7 +60,7 @@ jobs:
               pull_number: context.payload.pull_request.number
             });
 
-            const newBody = `${pullRequest.body}\n\n**Deployment URL:** [${process.env.DEPLOY_URL}](${process.env.DEPLOY_URL})`;
+            const newBody = `${pullRequest.body}\n\n**Deployment URL:** [${process.env.DEPLOY_URL}](${process.env.DEPLOY_URL})\n**Inspect URL:** [${process.env.INSPECT_URL}](${process.env.INSPECT_URL})`;
 
             await github.pulls.update({
               owner: context.repo.owner,
