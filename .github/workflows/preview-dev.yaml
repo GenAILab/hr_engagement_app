@@ -32,7 +32,9 @@ jobs:
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
 
       - name: Add Deployment URL to Summary
-        run: echo "Deployment URL: ${{ env.DEPLOY_URL }}"
+        run: |
+          echo "Deployment URL: ${{ env.DEPLOY_URL }}"
+          echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
 
       - name: Update PR with Deployment URL
         if: github.event_name == 'pull_request'
