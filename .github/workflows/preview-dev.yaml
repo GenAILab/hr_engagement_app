@@ -28,9 +28,16 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
-          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes)
-          INSPECT_URL="https://vercel.com/${{ secrets.VERCEL_ORG_ID }}/inspect/${{ env.DEPLOY_URL }}"
+          DEPLOY_OUTPUT=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --yes)
+          echo "DEPLOY_OUTPUT=${DEPLOY_OUTPUT}" >> $GITHUB_ENV
+          DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[^ ]*')
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
+
+      - name: Retrieve Inspect URL
+        run: |
+          INSPECT_OUTPUT=$(vercel inspect ${{ env.DEPLOY_URL }} --token=${{ secrets.VERCEL_TOKEN }})
+          echo "INSPECT_OUTPUT=${INSPECT_OUTPUT}" >> $GITHUB_ENV
+          INSPECT_URL=$(echo "${INSPECT_OUTPUT}" | grep -o 'https://[^ ]*')
           echo "INSPECT_URL=${INSPECT_URL}" >> $GITHUB_ENV
 
       - name: Add Deployment and Inspect URLs to Summary
