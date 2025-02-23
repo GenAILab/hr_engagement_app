@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
@@ -33,13 +35,23 @@ jobs:
           echo "::set-output name=vercel_preview_url::$DEPLOY_URL"
 
       - name: Output Deployed URL
-        run: |
-          echo "Deployment URL: $VERCEL_PREVIEW_URL"
+        run: | 
+        echo "Deployment URL: $VERCEL_PREVIEW_URL"
 
       - name: Add Deployment URL to Summary
         run: |
           echo "### 🚀 Vercel Deployment Successful!" >> $GITHUB_STEP_SUMMARY
           echo "🌍 Preview URL: [$VERCEL_PREVIEW_URL]($VERCEL_PREVIEW_URL)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Update PR Commit Message with Preview URL
+        if: github.event_name == 'pull_request'
+        run: |
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          COMMIT_MSG=$(git log -1 --pretty=%B)
+          NEW_MSG="${COMMIT_MSG}\n\nPreview URL: ${VERCEL_PREVIEW_URL}"
+          git commit --amend -m "$NEW_MSG"
+          git push --force-with-lease
 
       - name: Comment on PR with Preview URL
         if: github.event_name == 'pull_request'
@@ -51,5 +63,10 @@ jobs:
               issue_number: context.payload.pull_request.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `🚀 **Vercel Preview Deployment is Ready!**\n\n🌍 **Preview URL:** [${{ env.VERCEL_PREVIEW_URL }}](${{ env.VERCEL_PREVIEW_URL }})\n\nClick the link above to view the latest preview of your changes.`
+              body: |
+                🚀 **Vercel Preview Deployment is Ready!**
+
+                🌍 **Preview URL:** [${{ env.VERCEL_PREVIEW_URL }}](${{ env.VERCEL_PREVIEW_URL }})
+
+                Click the link above to view the latest preview of your changes.
             });
