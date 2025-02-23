@@ -28,8 +28,8 @@ jobs:
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
-          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --confirm > deployment_url.txt
-          echo "DEPLOY_URL=$(cat deployment_url.txt)" >> $GITHUB_ENV
+          DEPLOY_URL=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }} --confirm)
+          echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
 
       - name: Add Deployment URL to Summary
         run: echo "Deployment URL: ${{ env.DEPLOY_URL }}"
