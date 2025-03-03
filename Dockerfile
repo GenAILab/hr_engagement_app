@@ -13,4 +13,5 @@ EXPOSE 80
 ENV FLASK_APP=api.app
 ENV PORT=80
 
-CMD ["python", "-c", "from api.app import app; app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 80)))"] 
+# Simpler CMD that's less prone to errors
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=80"] 

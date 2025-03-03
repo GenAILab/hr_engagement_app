@@ -362,5 +362,9 @@ def delete_surveys():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)}), 500
 
+@app.route('/health')
+def health():
+    return {'status': 'healthy'}, 200
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=52552)
+    app.run(host='0.0.0.0', port=80)

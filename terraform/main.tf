@@ -205,8 +205,8 @@ resource "aws_ecs_task_definition" "app_task" {
   family                   = "${var.app_name}-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = "512"
+  memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
@@ -219,6 +219,20 @@ resource "aws_ecs_task_definition" "app_task" {
           containerPort = 80
           hostPort      = 80
           protocol      = "tcp"
+        }
+      ]
+      environment = [
+        {
+          name  = "FLASK_APP",
+          value = "api.app"
+        },
+        {
+          name  = "PORT",
+          value = "80"
+        },
+        {
+          name  = "FLASK_ENV",
+          value = "production"
         }
       ]
       logConfiguration = {
@@ -289,11 +303,12 @@ resource "aws_lb_listener" "app_listener" {
 
 # ECS Service
 resource "aws_ecs_service" "app_service" {
-  name            = "${var.app_name}-service"
-  cluster         = aws_ecs_cluster.app_cluster.id
-  task_definition = aws_ecs_task_definition.app_task.arn
-  desired_count   = 1
-  launch_type     = "FARGATE"
+  name                       = "${var.app_name}-service"
+  cluster                    = aws_ecs_cluster.app_cluster.id
+  task_definition            = aws_ecs_task_definition.app_task.arn
+  desired_count              = 1
+  launch_type                = "FARGATE"
+  health_check_grace_period_seconds = 120
 
   network_configuration {
     subnets          = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
