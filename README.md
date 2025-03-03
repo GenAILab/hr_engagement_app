@@ -84,3 +84,4 @@ To create a new Vercel project based on this specification:
 ### Additional Information
 
 Include any other relevant information, such as testing instructions, contribution guidelines, or links to documentation.
+
