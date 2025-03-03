@@ -33,20 +33,11 @@ jobs:
           DEPLOY_URL=$(echo "${DEPLOY_OUTPUT}" | grep -o 'https://[^ ]*')
           echo "DEPLOY_URL=${DEPLOY_URL}" >> $GITHUB_ENV
 
-      - name: Retrieve Inspect URL
-        run: |
-          INSPECT_OUTPUT=$(vercel inspect ${{ env.DEPLOY_URL }} --token=${{ secrets.VERCEL_TOKEN }})
-          echo "INSPECT_OUTPUT=${INSPECT_OUTPUT}" >> $GITHUB_ENV
-          INSPECT_URL=$(echo "${INSPECT_OUTPUT}" | grep -o 'https://[^ ]*')
-          echo "INSPECT_URL=${INSPECT_URL}" >> $GITHUB_ENV
-
       - name: Add Deployment and Inspect URLs to Summary
         run: |
           echo "🚀 **Deployment Successful!**" >> $GITHUB_STEP_SUMMARY
           echo "🔗 [View your deployment here](${{ env.DEPLOY_URL }})" >> $GITHUB_STEP_SUMMARY
-          echo "🔍 [Inspect your deployment here](${{ env.INSPECT_URL }})" >> $GITHUB_STEP_SUMMARY
           echo "Deployment URL: ${{ env.DEPLOY_URL }}"
-          echo "Inspect URL: ${{ env.INSPECT_URL }}"
 
       - name: Update PR with Deployment URL
         if: github.event_name == 'pull_request'
