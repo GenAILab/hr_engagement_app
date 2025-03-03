@@ -33,7 +33,13 @@ resource "aws_iam_user_policy" "deploy_user_policy" {
           "s3:*",
           "cloudwatch:*",
           "logs:*",
-          "iam:PassRole"
+          "iam:PassRole",
+          "elasticloadbalancing:*",
+          "elasticloadbalancing:DescribeLoadBalancers",
+          "ec2:DescribeInstances",
+          "ec2:DescribeSubnets",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeVpcs"
         ]
         Effect   = "Allow"
         Resource = "*"
