@@ -1,27 +1,67 @@
-.idea
-.vercel
-# Ignore Python virtual environment
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
 venv/
-.env/
-__pycache__/
-*.pyc
-*.pyo
+ENV/
+.env
 
-# Ignore Python dependencies
-bin/
-lib/
-lib64/
-include/
-*.dist-info
-*.egg-info
-__pycache__/
-*.pyc
-*.pyo
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Ignore installed dependencies
-bin/
-lib/
-lib64/
-include/
-*.dist-info
-*.egg-info
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+
+# Vercel
+.vercel
