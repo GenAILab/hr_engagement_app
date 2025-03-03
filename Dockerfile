@@ -10,4 +10,7 @@ COPY . .
 
 EXPOSE 80
 
-CMD ["python", "-m", "api.app"] 
+ENV FLASK_APP=api.app
+ENV PORT=80
+
+CMD ["python", "-c", "from api.app import app; app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 80)))"] 
