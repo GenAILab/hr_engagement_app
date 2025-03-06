@@ -137,23 +137,26 @@ resource "aws_route_table_association" "public_subnet_2_association" {
 # Security Group for ECS Tasks
 resource "aws_security_group" "ecs_tasks_sg" {
   name        = "${var.app_name}-ecs-tasks-sg"
-  description = "Allow inbound traffic to ECS tasks"
+  description = "Allow inbound traffic to ECS tasks from specific IPs"
   vpc_id      = aws_vpc.app_vpc.id
 
+  # HTTP access from specific IPs
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_ip_addresses # Use a variable for allowed IPs
   }
 
+  # HTTPS access from specific IPs
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_ip_addresses
   }
 
+  # Allow all outbound traffic
   egress {
     from_port   = 0
     to_port     = 0
@@ -163,6 +166,41 @@ resource "aws_security_group" "ecs_tasks_sg" {
 
   tags = {
     Name = "${var.app_name}-ecs-tasks-sg"
+  }
+}
+
+# Security Group for ALB
+resource "aws_security_group" "alb_sg" {
+  name        = "${var.app_name}-alb-sg"
+  description = "Allow inbound traffic to ALB from specific IPs"
+  vpc_id      = aws_vpc.app_vpc.id
+
+  # HTTP access from specific IPs
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ip_addresses
+  }
+
+  # HTTPS access from specific IPs
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ip_addresses
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.app_name}-alb-sg"
   }
 }
 
@@ -258,7 +296,7 @@ resource "aws_lb" "app_lb" {
   name               = "${var.app_name}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.ecs_tasks_sg.id]
+  security_groups    = [aws_security_group.alb_sg.id]
   subnets            = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
 
   enable_deletion_protection = false

@@ -65,3 +65,6 @@ ENV/
 
 # Vercel
 .vercel
+
+# Terraform variables with sensitive information
+terraform/terraform.tfvars
