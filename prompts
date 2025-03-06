@@ -1,0 +1,20 @@
+## Terraform + GitHub Actions
+ As experienced Cloud Architect and DevOps, could you please implemenet infrastructure as a code with terraform with deployment of my app on AWS. Please use
+  AWS_Architecture_Vision.md document as baseline that highlight AWS deployment and Terraform best practices. Please store terraform state in the s3 bucket and use this bucket
+  app-builder-dplmt-tf-state.
+
+  GitHub Actions should not contain terraform infrastructure deployment, it should be manual step. It should also include ECR Repository Creation.  But then GitHub Actions
+  should build a container, push it, veryfy the deployment and prepare a summary.
+
+  Update terraform and create a IAM user with required permission that I can use for GitHub actions execution.
+
+please fix it Any selected backend applies to the entire configuration, so Terraform expects provider configurations only in the root module. I need to have such backend
+  setup.
+
+   please refactor terraform code to create ecr repo with pre spefied repo, so you can skip sending ecr_repository_url before applying
+
+   ?? apply terraform plan for dev env to check
+
+   I executed terraform and deployed infra. where outputs stored: github_actions_access_key_id and github_actions_secret_access_key
+
+    update terraform outputs to include resource "aws_iam_user" "github_actions"ver

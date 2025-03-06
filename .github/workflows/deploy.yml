@@ -109,14 +109,15 @@ jobs:
           echo "Waiting for deployment to complete..."
           sleep 60  # Allow some time for the deployment to progress
           
-          # Check service stability
+          # Check service stability and deployment status
+          echo "Checking ECS service status..."
           AWS_PAGER="" aws ecs describe-services --cluster hr-engagement-app-cluster-${{ env.DEPLOY_ENV }} --services hr-engagement-app-service-${{ env.DEPLOY_ENV }} --query 'services[0].deployments'
           
-          # Try to connect to the application
-          if [ "${{ env.APP_URL }}" != "unknown" ]; then
-            echo "Testing connection to ${{ env.APP_URL }}..."
-            curl -s --retry 5 --retry-delay 10 ${{ env.APP_URL }} || echo "Deployment verification could not connect to application, but continuing."
-          fi
+          # Check task status
+          echo "Checking ECS task status..."
+          AWS_PAGER="" aws ecs list-tasks --cluster hr-engagement-app-cluster-${{ env.DEPLOY_ENV }} --service-name hr-engagement-app-service-${{ env.DEPLOY_ENV }} --query 'taskArns'
+          
+          # Skip URL verification which can be affected by IP restrictions
 
       - name: Post Deployment Summary
         run: |
