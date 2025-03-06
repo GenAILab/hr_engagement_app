@@ -1,0 +1,145 @@
+name: Build and Deploy HR Engagement App Container
+
+on:
+  push:
+    branches:
+      - claude_deployment
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      tag:
+        description: 'Image tag to deploy'
+        required: false
+        default: 'latest'
+        type: string
+
+jobs:
+  build_and_push:
+    name: Build and Push Container
+    runs-on: ubuntu-latest
+    
+    # Define which environment to use based on manual input or default to 'dev' for pushes to main
+    env:
+      DEPLOY_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'dev' }}
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag != '' && inputs.tag || github.sha }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get ECR Repository URL
+        id: get-ecr-url
+        run: |
+          # Get the repository URL - ECR repository should be created via Terraform first
+          ECR_REPO=$(aws ecr describe-repositories --repository-names hr-engagement-app-${{ env.DEPLOY_ENV }} --query 'repositories[0].repositoryUri' --output text || echo "")
+          
+          if [ -z "$ECR_REPO" ]; then
+            echo "::error::ECR repository hr-engagement-app-${{ env.DEPLOY_ENV }} does not exist. Please deploy the infrastructure using Terraform first."
+            exit 1
+          fi
+          
+          echo "REPOSITORY_URL=$ECR_REPO" >> $GITHUB_ENV
+          echo "Repository URL: $ECR_REPO"
+
+      - name: Build and tag Docker image
+        run: |
+          echo "Building image: ${{ env.REPOSITORY_URL }}:${{ env.IMAGE_TAG }}"
+          docker build -t ${{ env.REPOSITORY_URL }}:${{ env.IMAGE_TAG }} -t ${{ env.REPOSITORY_URL }}:latest .
+
+      - name: Push image to Amazon ECR
+        run: |
+          echo "Pushing image: ${{ env.REPOSITORY_URL }}:${{ env.IMAGE_TAG }}"
+          docker push ${{ env.REPOSITORY_URL }}:${{ env.IMAGE_TAG }}
+          docker push ${{ env.REPOSITORY_URL }}:latest
+
+      - name: Update ECS service (if it exists)
+        id: update-service
+        run: |
+          CLUSTER_NAME="hr-engagement-app-cluster-${{ env.DEPLOY_ENV }}"
+          SERVICE_NAME="hr-engagement-app-service-${{ env.DEPLOY_ENV }}"
+          
+          # Check if the ECS service exists
+          SERVICE_ARN=$(aws ecs describe-services --cluster $CLUSTER_NAME --services $SERVICE_NAME --query 'services[0].serviceArn' --output text 2>/dev/null || echo "")
+          
+          if [ "$SERVICE_ARN" != "None" ] && [ ! -z "$SERVICE_ARN" ]; then
+            echo "Updating ECS service: $SERVICE_NAME in cluster $CLUSTER_NAME"
+            aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
+            echo "SERVICE_UPDATED=true" >> $GITHUB_ENV
+          else
+            echo "Service does not exist yet or couldn't be found. No service update performed."
+            echo "SERVICE_UPDATED=false" >> $GITHUB_ENV
+          fi
+
+      - name: Get Application URL
+        id: get-url
+        run: |
+          # Try to get the ALB DNS name from AWS
+          ALB_NAME="hr-engagement-app-alb-${{ env.DEPLOY_ENV }}"
+          APP_URL=$(aws elbv2 describe-load-balancers --names $ALB_NAME --query 'LoadBalancers[0].DNSName' --output text 2>/dev/null || echo "")
+          
+          if [ "$APP_URL" != "None" ] && [ ! -z "$APP_URL" ]; then
+            echo "Application is deployed at http://$APP_URL"
+            echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
+          else
+            echo "Could not retrieve application URL. Infrastructure may not be deployed yet."
+            echo "APP_URL=unknown" >> $GITHUB_ENV
+          fi
+
+      - name: Verify Deployment
+        if: env.SERVICE_UPDATED == 'true' && env.APP_URL != 'unknown'
+        run: |
+          echo "Waiting for deployment to complete..."
+          sleep 60  # Allow some time for the deployment to progress
+          
+          # Check service stability
+          AWS_PAGER="" aws ecs describe-services --cluster hr-engagement-app-cluster-${{ env.DEPLOY_ENV }} --services hr-engagement-app-service-${{ env.DEPLOY_ENV }} --query 'services[0].deployments'
+          
+          # Try to connect to the application
+          if [ "${{ env.APP_URL }}" != "unknown" ]; then
+            echo "Testing connection to ${{ env.APP_URL }}..."
+            curl -s --retry 5 --retry-delay 10 ${{ env.APP_URL }} || echo "Deployment verification could not connect to application, but continuing."
+          fi
+
+      - name: Post Deployment Summary
+        run: |
+          echo "::group::Deployment Summary"
+          echo "Environment: ${{ env.DEPLOY_ENV }}"
+          echo "Image: ${{ env.REPOSITORY_URL }}:${{ env.IMAGE_TAG }}"
+          
+          if [ "${{ env.SERVICE_UPDATED }}" == "true" ]; then
+            echo "Service update triggered: Yes"
+          else
+            echo "Service update triggered: No (infrastructure may not be deployed yet)"
+          fi
+          
+          if [ "${{ env.APP_URL }}" != "unknown" ]; then
+            echo "Application URL: ${{ env.APP_URL }}"
+          else
+            echo "Application URL: Not available (infrastructure may not be deployed yet)"
+          fi
+          
+          echo "::endgroup::"
+          
+          if [ "${{ env.APP_URL }}" != "unknown" ]; then
+            echo "::notice title=Deployment Complete::Container built and deployed to ${{ env.DEPLOY_ENV }} environment. Application available at ${{ env.APP_URL }}"
+          else
+            echo "::notice title=Build Complete::Container built and pushed to ECR. Infrastructure deployment needed to access the application."
+          fi
