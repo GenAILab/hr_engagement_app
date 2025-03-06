@@ -176,12 +176,14 @@ resource "aws_iam_policy" "github_actions_policy" {
           "ecs:DescribeServices",
           "ecs:UpdateService",
           "ecs:DescribeClusters",
-          "ecs:DescribeTaskDefinition"
+          "ecs:DescribeTaskDefinition",
+          "ecs:ListTasks"
         ]
         Resource = [
           "arn:aws:ecs:*:*:service/${var.app_name}-cluster-${var.environment}/${var.app_name}-service-${var.environment}",
           "arn:aws:ecs:*:*:cluster/${var.app_name}-cluster-${var.environment}",
-          "arn:aws:ecs:*:*:task-definition/${var.app_name}-task-${var.environment}:*"
+          "arn:aws:ecs:*:*:task-definition/${var.app_name}-task-${var.environment}:*",
+          "arn:aws:ecs:*:*:task/${var.app_name}-cluster-${var.environment}/*"
         ]
       },
       # ELB permissions for retrieving application URL
