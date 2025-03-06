@@ -176,8 +176,7 @@ resource "aws_iam_policy" "github_actions_policy" {
           "ecs:DescribeServices",
           "ecs:UpdateService",
           "ecs:DescribeClusters",
-          "ecs:DescribeTaskDefinition",
-          "ecs:ListTasks"
+          "ecs:DescribeTaskDefinition"
         ]
         Resource = [
           "arn:aws:ecs:*:*:service/${var.app_name}-cluster-${var.environment}/${var.app_name}-service-${var.environment}",
@@ -185,6 +184,14 @@ resource "aws_iam_policy" "github_actions_policy" {
           "arn:aws:ecs:*:*:task-definition/${var.app_name}-task-${var.environment}:*",
           "arn:aws:ecs:*:*:task/${var.app_name}-cluster-${var.environment}/*"
         ]
+      },
+      # Separate ListTasks permission with broader resource scope
+      {
+        Effect = "Allow"
+        Action = [
+          "ecs:ListTasks"
+        ]
+        Resource = "*"
       },
       # ELB permissions for retrieving application URL
       {

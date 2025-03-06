@@ -18,3 +18,5 @@ please fix it Any selected backend applies to the entire configuration, so Terra
    I executed terraform and deployed infra. where outputs stored: github_actions_access_key_id and github_actions_secret_access_key
 
     update terraform outputs to include resource "aws_iam_user" "github_actions"ver
+
+    An error occurred (AccessDeniedException) when calling the ListTasks operation: User: arn:aws:iam::***:user/deployment/hr-engagement-app-github-actions-dev is not authorized to perform: ecs:ListTasks on resource: arn:aws:ecs:us-east-1:***:container-instance/hr-engagement-app-cluster-dev/* because no identity-based policy allows the ecs:ListTasks action
