@@ -101,8 +101,34 @@ def download_logs(run_id):
     print(f"Logs downloaded to: {temp_file.name}")
     return temp_file.name
 
+import zipfile
+import os
+import tempfile
+import shutil
+import re
+import difflib
+
+# Define error-related keywords for filtering
+ERROR_KEYWORDS = [
+    "##[error]",
+    "exit code",
+    "failed",
+    "AccessDeniedException",
+    "permission denied",
+    "Process completed with exit code",
+    "error:",
+    "fatal:",
+    "segmentation fault"
+]
 
 def extract_failed_logs(log_file, failed_steps):
+    """
+    Extracts the most relevant failure logs from GitHub Actions.
+
+    :param log_file: Path to the downloaded logs ZIP file.
+    :param failed_steps: List of tuples (job_name, step_name) for failed steps.
+    :return: The most relevant error-containing log chunk.
+    """
     if not log_file or not os.path.exists(log_file):
         print("No log file available to extract.")
         return "No logs available."
@@ -114,66 +140,54 @@ def extract_failed_logs(log_file, failed_steps):
         with zipfile.ZipFile(log_file, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
 
-        for job_name, step_name in failed_steps:
-            log_file_name = None
-            for file in os.listdir(extract_dir):
-                if job_name.lower().replace(" ", "-") in file.lower() and file.endswith('.txt'):
-                    log_file_name = file
-                    break
+        log_files = []
+        for root, _, files in os.walk(extract_dir):
+            for file in files:
+                if file.endswith(".txt"):
+                    log_files.append(os.path.join(root, file))  # Collect all log file paths
 
-            if not log_file_name:
-                failure_details.append(
-                    f"=== Log for Failed Step: {step_name} ===\nNo log file found for job: {job_name}")
+        for job_name, step_name in failed_steps:
+            # 🔹 Use fuzzy matching to find the closest log file
+            log_file_path = None
+            best_match = difflib.get_close_matches(job_name.lower().replace(" ", "-"), [os.path.basename(f) for f in log_files], n=1, cutoff=0.4)
+            if best_match:
+                log_file_path = next(f for f in log_files if os.path.basename(f) == best_match[0])
+
+            if not log_file_path or not os.path.isfile(log_file_path):  # Ensure it's a file, not a directory
+                failure_details.append(f"=== Log for Failed Step: {step_name} ===\n⚠ No log file found for job: {job_name}")
                 continue
 
-            file_path = os.path.join(extract_dir, log_file_name)
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.readlines()
+            with open(log_file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read()
 
-                step_logs = []
-                capturing = False
-                for i, line in enumerate(content):
-                    if "##[group]Run" in line:
-                        capturing = True
-                        start_idx = max(0, i - 5)  # Add context before the step
-                        step_logs.extend([line.strip() for line in content[start_idx:i]])
+            # 🔹 Split logs into chunks by "##[group]"
+            log_chunks = re.split(r"##\[group\]", content)
 
-                    if capturing:
-                        step_logs.append(line.strip())
-                        if "##[error]" in line or "exit code" in line:
-                            end_idx = min(len(content), i + 5)  # Add context after failure
-                            step_logs.extend([line.strip() for line in content[i + 1:end_idx]])
-                            break
-                        elif "##[endgroup]" in line and "Run" not in line:
-                            capturing = False
+            # 🔹 Find the chunk with the most error keywords
+            best_chunk = None
+            max_error_count = 0
 
-                if step_logs:
-                    filtered_logs = []
-                    for log in step_logs:
-                        if ("Branch name" in log or
-                                "##[error]" in log or
-                                "exit code" in log or
-                                "##[group]Run" in log or
-                                "shell:" in log):  # Include command setup
-                            filtered_logs.append(log)
-                    if filtered_logs:
-                        failure_details.append(f"=== Log for Failed Step: {step_name} ===\n" + "\n".join(filtered_logs))
-                    else:
-                        failure_details.append(f"=== Log for Failed Step: {step_name} ===\n" + "\n".join(step_logs))
-                else:
-                    failure_details.append(
-                        f"=== Log for Failed Step: {step_name} ===\nStep-specific logs not found. Full job log:\n{'-' * 50}\n" + "\n".join(
-                            [line.strip() for line in content]))
+            for chunk in log_chunks:
+                error_count = sum(chunk.count(keyword) for keyword in ERROR_KEYWORDS)
 
+                if error_count > max_error_count:
+                    best_chunk = chunk
+                    max_error_count = error_count
+
+            if best_chunk:
+                failure_details.append(f"=== Log for Failed Step: {step_name} ===\n{best_chunk}")
+            else:
+                failure_details.append(f"=== Log for Failed Step: {step_name} ===\n⚠ No error-containing logs found.")
+
+        # Cleanup
         shutil.rmtree(extract_dir)
         os.remove(log_file)
 
-        if failure_details:
-            return "\n\n".join(failure_details)
-        return "No detailed logs found for failed steps."
+        return "\n\n".join(failure_details) if failure_details else "⚠ No relevant logs found."
 
     except zipfile.BadZipFile as e:
-        return f"Failed to extract logs: {str(e)}"
+        return f"⚠ Failed to extract logs: {str(e)}"
+
 
 
 def analyze_last_run():
