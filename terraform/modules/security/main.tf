@@ -200,6 +200,17 @@ resource "aws_iam_policy" "github_actions_policy" {
           "elasticloadbalancing:DescribeLoadBalancers"
         ]
         Resource = "*"
+      },
+      # Additional permissions for GitHub Actions to access and download logs
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:GetLogEvents",
+          "logs:DescribeLogGroups",
+          "logs:DescribeLogStreams",
+          "logs:FilterLogEvents"
+        ]
+        Resource = "*"
       }
     ]
   })
